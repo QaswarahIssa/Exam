@@ -441,29 +441,29 @@ questions = [
 
 # دالة إرسال النتائج بالرابط الجديد المحدث
 def send_to_sheets(name, score, total, percentage, details):
-  url = "https://script.google.com/macros/s/AKfycbwV52G7JiI0PUGYSdceCeTOdmIYMh6CUnsNUkxVt0AMUmYYzLp4w8dyoe10caz6XKML/exec"
-  payload = {
-      "name": name,
-      "score": f"{score} / {total} ({percentage}%)",
-      "details": str(details),
-  }
-  try:
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-      st.success("تم تسجيل النتيجة في جوجل شيت بنجاح.")
-    else:
-      st.warning(f"تعذر تسجيل النتيجة، رمز الاستجابة: {response.status_code}")
-  except Exception as e:
-    st.error(f"حدث خطأ في الاتصال بجوجل شيت: {e}")
+    url = "https://script.google.com/macros/s/AKfycbwxpzLBuD-cIEV_HU4p51vR2tQMPQ0xvTN8RXlHnwvFejpBJiSr8jeKYiRdc6bFGUaV/exec"
+    payload = {
+        "name": name,
+        "score": f"{score} / {total} ({percentage}%)",
+        "details": str(details),
+    }
+    try:
+        response = requests.post(url, json=payload)
+        if response.status_code == 200:
+            st.success("تم تسجيل النتيجة في جوجل شيت بنجاح.")
+        else:
+            st.warning(f"تعذر تسجيل النتيجة، رمز الاستجابة: {response.status_code}")
+    except Exception as e:
+        st.error(f"حدث خطأ في الاتصال بجوجل شيت: {e}")
 
 
 # إدارة حالة الامتحان
 if "submitted" not in st.session_state:
-  st.session_state.submitted = False
+    st.session_state.submitted = False
 if "start_time" not in st.session_state:
-  st.session_state.start_time = time.time()
+    st.session_state.start_time = time.time()
 if "data_sent" not in st.session_state:
-  st.session_state.data_sent = False
+    st.session_state.data_sent = False
 
 # واجهة التطبيق
 st.title("الامتحان التقني الشامل")
@@ -473,8 +473,8 @@ st.markdown("---")
 full_name = st.text_input("الرجاء إدخال الاسم الثلاثي قبل البدء:")
 
 if not full_name:
-  st.warning("يرجى إدخال الاسم الثلاثي لعرض الأسئلة وبدء الامتحان.")
-  st.stop()
+    st.warning("يرجى إدخال الاسم الثلاثي لعرض الأسئلة وبدء الامتحان.")
+    st.stop()
 
 # مؤقت لمدة 20 دقيقة (1200 ثانية)
 duration = 20 * 60
@@ -482,73 +482,73 @@ elapsed_time = time.time() - st.session_state.start_time
 remaining_time = int(duration - elapsed_time)
 
 if remaining_time <= 0 and not st.session_state.submitted:
-  st.session_state.submitted = True
-  st.warning(
-      "انتهى الوقت المحدد للامتحان (20 دقيقة)! يتم الآن إرسال إجاباتك تلقائياً."
-  )
-  st.rerun()
+    st.session_state.submitted = True
+    st.warning(
+        "انتهى الوقت المحدد للامتحان (20 دقيقة)! يتم الآن إرسال إجاباتك تلقائياً."
+    )
+    st.rerun()
 
 if not st.session_state.submitted:
-  mins, secs = divmod(max(0, remaining_time), 60)
-  st.info(
-      f"⏳ الوقت المتبقي: {mins:02d}:{secs:02d} دقيقة. يرجى الإجابة على جميع"
-      " الأسئلة قبل انتهاء الوقت."
-  )
-
-  user_answers = {}
-  for i, q in enumerate(questions):
-    st.write(f"**{q['q']}**")
-    user_answers[i] = st.selectbox(
-        f"اختر الإجابة للسؤال {i+1}", q["options"], key=f"q_{i}"
+    mins, secs = divmod(max(0, remaining_time), 60)
+    st.info(
+        f"⏳ الوقت المتبقي: {mins:02d}:{secs:02d} دقيقة. يرجى الإجابة على جميع"
+        " الأسئلة قبل انتهاء الوقت."
     )
-    st.write("")
 
-  if st.button("إرسال الامتحان"):
-    st.session_state.submitted = True
-    st.session_state.user_answers = user_answers
-    st.rerun()
+    user_answers = {}
+    for i, q in enumerate(questions):
+        st.write(f"**{q['q']}**")
+        user_answers[i] = st.selectbox(
+            f"اختر الإجابة للسؤال {i+1}", q["options"], key=f"q_{i}"
+        )
+        st.write("")
+
+    if st.button("إرسال الامتحان"):
+        st.session_state.submitted = True
+        st.session_state.user_answers = user_answers
+        st.rerun()
 
 # معالجة النتائج وإرسالها عند الانتهاء أو انتهاء الوقت
 if st.session_state.submitted:
-  score = 0
-  details = {}
-  user_ans = st.session_state.get("user_answers", {})
+    score = 0
+    details = {}
+    user_ans = st.session_state.get("user_answers", {})
 
-  for i, q in enumerate(questions):
-    chosen = user_ans.get(i, "اختر الإجابة...")
-    correct = q["answer"]
-    if chosen == correct:
-      score += 1
-      details[f"Q{i+1}"] = "Correct"
-    else:
-      details[f"Q{i+1}"] = f"Wrong (Chosen: {chosen})"
+    for i, q in enumerate(questions):
+        chosen = user_ans.get(i, "اختر الإجابة...")
+        correct = q["answer"]
+        if chosen == correct:
+            score += 1
+            details[f"Q{i+1}"] = "Correct"
+        else:
+            details[f"Q{i+1}"] = f"Wrong (Chosen: {chosen})"
 
-  # حساب النسبة المئوية
-  percentage = round((score / len(questions)) * 100, 2)
+    # حساب النسبة المئوية
+    percentage = round((score / len(questions)) * 100, 2)
 
-  # إرسال النتائج لجوجل شيت مرة واحدة فقط
-  if not st.session_state.data_sent:
-    send_to_sheets(full_name, score, len(questions), percentage, details)
-    st.session_state.data_sent = True
+    # إرسال النتائج لجوجل شيت مرة واحدة فقط
+    if not st.session_state.data_sent:
+        send_to_sheets(full_name, score, len(questions), percentage, details)
+        st.session_state.data_sent = True
 
-  st.success("تم إرسال امتحانك وحفظ النتائج بنجاح!")
-  st.markdown(f"### النتيجة النهائية للطالب: **{full_name}**")
-  st.metric(
-      label="الدرجة والنسبة المئوية",
-      value=f"{score} / {len(questions)}",
-      delta=f"{percentage}%",
-  )
+    st.success("تم إرسال امتحانك وحفظ النتائج بنجاح!")
+    st.markdown(f"### النتيجة النهائية للطالب: **{full_name}**")
+    st.metric(
+        label="الدرجة والنسبة المئوية",
+        value=f"{score} / {len(questions)}",
+        delta=f"{percentage}%",
+    )
 
-  st.markdown("---")
-  st.subheader("تصحيح الأخطاء والإجابات:")
+    st.markdown("---")
+    st.subheader("تصحيح الأخطاء والإجابات:")
 
-  for i, q in enumerate(questions):
-    chosen = user_ans.get(i, "لم يتم الإجابة")
-    correct = q["answer"]
-    if chosen == correct:
-      st.success(f"**{q['q']}**\n\n- إجابتك: {chosen} (صحيحة ✅)")
-    else:
-      st.error(
-          f"**{q['q']}**\n\n- إجابتك: {chosen} (خطأ ❌)\n- الإجابة الصحيحة:"
-          f" **{correct}**"
-      )
+    for i, q in enumerate(questions):
+        chosen = user_ans.get(i, "لم يتم الإجابة")
+        correct = q["answer"]
+        if chosen == correct:
+            st.success(f"**{q['q']}**\n\n- إجابتك: {chosen} (صحيحة ✅)")
+        else:
+            st.error(
+                f"**{q['q']}**\n\n- إجابتك: {chosen} (خطأ ❌)\n- الإجابة الصحيحة:"
+                f" **{correct}**"
+            )
