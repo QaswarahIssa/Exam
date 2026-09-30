@@ -24,7 +24,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# بيانات الأسئلة الأربعين المستخرجة من الملف
+# بيانات الأسئلة الأربعين
 questions = [
     {
         "q": "السؤال رقم 1: أثناء فحص مسارات الويب باستخدام أداة Gobuster، ظهر مسار بملف الاستجابة يحمل الرمز 301. ماذا يعني هذا الرمز تقنياً؟",
@@ -439,16 +439,22 @@ questions = [
 ]
 
 
-# دالة إرسال النتائج إلى جوجل شيت باستخدام رابط Google Apps Script الخاص بك
-def send_to_sheets(name, score, total, details):
+# دالة إرسال النتائج إلى جوجل شيت مع إرسال النسبة المئوية
+def send_to_sheets(name, score, total, percentage, details):
   url = "https://script.google.com/macros/s/AKfycbyU6LKgh84xJSmynaJutUJNcTH5IZvzvmXAcO2BIAThrwXWKEs3iDBpcsZKUxS6NMI4/exec"
-  payload = {"name": name, "score": f"{score} / {total}", "details": str(details)}
+  payload = {
+      "name": name,
+      "score": f"{score} / {total} ({percentage}%)",
+      "details": str(details),
+  }
   try:
     response = requests.post(url, json=payload)
-    if response.status_code != 200:
-      st.warning("حدث خطأ أثناء إرسال النتائج إلى جوجل شيت.")
+    if response.status_code == 200:
+      st.success("تم تسجيل النتيجة في جوجل شيت بنجاح.")
+    else:
+      st.warning(f"تعذر تسجيل النتيجة، رمز الاستجابة: {response.status_code}")
   except Exception as e:
-    st.error(f"تعذر الاتصال بـ جوجل شيت: {e}")
+    st.error(f"حدث خطأ في الاتصال بجوجل شيت: {e}")
 
 
 # إدارة حالة الامتحان
@@ -517,14 +523,21 @@ if st.session_state.submitted:
     else:
       details[f"Q{i+1}"] = f"Wrong (Chosen: {chosen})"
 
+  # حساب النسبة المئوية
+  percentage = round((score / len(questions)) * 100, 2)
+
   # إرسال النتائج لجوجل شيت مرة واحدة فقط
   if not st.session_state.data_sent:
-    send_to_sheets(full_name, score, len(questions), details)
+    send_to_sheets(full_name, score, len(questions), percentage, details)
     st.session_state.data_sent = True
 
-  st.success("تم إرسال امتحانك وحفظ النتائج في جوجل شيت بنجاح!")
+  st.success("تم إرسال امتحانك وحفظ النتائج بنجاح!")
   st.markdown(f"### النتيجة النهائية للطالب: **{full_name}**")
-  st.metric(label="درجتك", value=f"{score} / {len(questions)}")
+  st.metric(
+      label="الدرجة والنسبة المئوية",
+      value=f"{score} / {len(questions)}",
+      delta=f"{percentage}%",
+  )
 
   st.markdown("---")
   st.subheader("تصحيح الأخطاء والإجابات:")
