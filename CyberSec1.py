@@ -439,9 +439,9 @@ questions = [
 ]
 
 
-# دالة إرسال النتائج إلى جوجل شيت مع إرسال النسبة المئوية
+# دالة إرسال النتائج بالرابط الجديد المحدث
 def send_to_sheets(name, score, total, percentage, details):
-  url = "https://script.google.com/macros/s/AKfycbyU6LKgh84xJSmynaJutUJNcTH5IZvzvmXAcO2BIAThrwXWKEs3iDBpcsZKUxS6NMI4/exec"
+  url = "https://script.google.com/macros/s/AKfycbwV52G7JiI0PUGYSdceCeTOdmIYMh6CUnsNUkxVt0AMUmYYzLp4w8dyoe10caz6XKML/exec"
   payload = {
       "name": name,
       "score": f"{score} / {total} ({percentage}%)",
